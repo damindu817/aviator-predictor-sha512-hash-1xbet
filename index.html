@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>XTREME AVIATOR SHA512 HASH PREDICTOR PRO</title>
   <link rel="stylesheet" href="css/styles.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -10,25 +10,414 @@
 <body>
   <!-- Offline Overlay -->
   <div class="offline-overlay" id="offlineOverlay">
-    <!-- Content remains same -->
+    <div class="connection-animation" id="connectionAnimation"></div>
+    
+    <div class="offline-container">
+      <div class="offline-icon">
+        <i class="fas fa-unlink"></i>
+      </div>
+      <h1 class="offline-title">CONNECTION LOST</h1>
+      <p class="offline-message">XTREME AVIATOR predictor requires stable internet connection for real-time predictions. Please check your network and try again.</p>
+      <button class="retry-btn" id="retryBtn">
+        <i class="fas fa-sync-alt"></i> RETRY CONNECTION
+      </button>
+    </div>
   </div>
 
   <!-- App Structure -->
   <div class="app-container">
-    <!-- Header, Content, Navigation same as original -->
+    <!-- Fixed Header -->
+    <div class="header">
+      <h1>XTREME AVIATOR SHA512 HASH PREDICTOR PRO</h1>
+      <p>Advanced AI-powered prediction with 70%+ accuracy</p>
+    </div>
+    
+    <!-- Scrollable Content Area -->
+    <div class="scroll-container">
+      <!-- Main Content Container -->
+      <div class="main-container">
+        <div class="datetime">
+          <div id="current-date">Loading...</div>
+          <div id="current-time">--:--:--</div>
+        </div>
+        
+        <div class="content">
+          <!-- Predictor Tab -->
+          <div class="tab-content active" id="predictorTab">
+            <div class="input-group">
+              <label for="hashInput">Enter SHA512 Hash <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltiptext">Must be 128-character hexadecimal string (0-9, a-f)</span></span></label>
+              <input type="text" id="hashInput" placeholder="Paste your hash here..." autocomplete="off" autocorrect="off" spellcheck="false">
+              <div class="input-actions">
+                <button class="paste-btn" id="pasteHashInput">
+                  <i class="fas fa-paste"></i> Paste Hash
+                </button>
+                <button class="clear-btn" id="clearHashInput">
+                  <i class="fas fa-broom"></i> Clear
+                </button>
+              </div>
+            </div>
+            
+            <div class="stats-container">
+              <div class="stat-card success">
+                <h4>Success Rate</h4>
+                <div class="value" id="success-rate">-</div>
+              </div>
+              <div class="stat-card warning">
+                <h4>Avg. Delay</h4>
+                <div class="value" id="avg-delay">-</div>
+              </div>
+              <div class="stat-card">
+                <h4>Total Predictions</h4>
+                <div class="value" id="total-predictions">-</div>
+              </div>
+            </div>
+            
+            <div class="odd-buttons">
+              <button class="odd-btn" onclick="predict('2')" id="odd-2">
+                <span>2x</span>
+                <span>Low Risk</span>
+                <div class="confidence-bar" id="confidence-2" style="width: 0%"></div>
+              </button>
+              <button class="odd-btn" onclick="predict('3')" id="odd-3">
+                <span>3x</span>
+                <span>Balanced</span>
+                <div class="confidence-bar" id="confidence-3" style="width: 0%"></div>
+              </button>
+              <button class="odd-btn" onclick="predict('4')" id="odd-4">
+                <span>4x</span>
+                <span>Moderate</span>
+                <div class="confidence-bar" id="confidence-4" style="width: 0%"></div>
+              </button>
+              <button class="odd-btn" onclick="predict('7')" id="odd-7">
+                <span>7x</span>
+                <span>High Risk</span>
+                <div class="confidence-bar" id="confidence-7" style="width: 0%"></div>
+              </button>
+              <button class="odd-btn" onclick="predict('10')" id="odd-10">
+                <span>10x</span>
+                <span>Very High Risk</span>
+                <div class="confidence-bar" id="confidence-10" style="width: 0%"></div>
+              </button>
+              <button class="odd-btn" onclick="predict('100')" id="odd-100">
+                <span>100x</span>
+                <span>Extreme Risk</span>
+                <div class="confidence-bar" id="confidence-100" style="width: 0%"></div>
+              </button>
+            </div>
+            
+            <div class="results" id="output">
+              <div class="result-item">
+                <span class="label">Target Multiplier:</span>
+                <span class="value" id="result-odd">-</span>
+              </div>
+              <div class="result-item">
+                <span class="label">Hash Entropy:</span>
+                <span class="value" id="result-entropy">-</span>
+              </div>
+              <div class="result-item">
+                <span class="label">Hash Score:</span>
+                <span class="value" id="result-score">-</span>
+              </div>
+              <div class="result-item">
+                <span class="label">Confidence Level:</span>
+                <span class="value" id="result-confidence">-</span>
+              </div>
+              <div class="result-item">
+                <span class="label">Estimated Delay:</span>
+                <span class="value" id="result-delay">-</span>
+              </div>
+              <div class="result-item">
+                <span class="label">Next Signal Time:</span>
+                <span class="value" id="result-time">-</span>
+              </div>
+              <button class="copy-result-btn" id="copyResultBtn" onclick="copyResultToClipboard(event)" disabled>
+                <i class="fas fa-copy"></i> Copy Signal
+              </button>
+            </div>
+            
+            <div class="countdown" id="countdown">No active signals. Create a new prediction.</div>
+          </div>
+          
+          <!-- History Tab -->
+          <div class="tab-content" id="historyTab">
+            <div class="history-tab">
+              <div class="history-header">
+                <h3><i class="fas fa-history"></i> Prediction History</h3>
+                <button class="history-clear-btn" onclick="showClearDialog()">
+                  <i class="fas fa-trash-alt"></i> Clear
+                </button>
+              </div>
+              <div class="history-list" id="historyLog"></div>
+            </div>
+          </div>
+          
+          <!-- Notification Tab -->
+          <div class="tab-content" id="notificationTab">
+            <div class="notification-tab" id="notificationTabContent">
+              <!-- Dynamic content will be inserted here -->
+            </div>
+          </div>
+          
+          <!-- Support Tab -->
+          <div class="tab-content" id="supportTab">
+            <div class="support-tab">
+              <div class="support-card">
+                <h3><i class="fas fa-question-circle"></i> Need Help?</h3>
+                <button class="support-btn" onclick="window.open('https://damindu817.github.io/Aviator-Sha512-Hash-Professional-Strategy-Guide/','_blank')" style="background: rgba(255, 190, 11, 0.2); color: var(--warning);">
+                  <i class="fas fa-book"></i> User Guide
+                </button>
+                <button class="support-btn" onclick="window.open('https://damindu817.github.io/DISCLAIMER-/','_blank')" style="background: rgba(255, 0, 110, 0.2); color: var(--danger);">
+                  <i class="fas fa-exclamation-triangle"></i> Disclaimer
+                </button>
+                <button class="support-btn" onclick="window.open('https://t.me/aviatorpredictor')" style="background: rgba(0, 136, 204, 0.2); color: #0088cc;">
+                  <i class="fab fa-telegram"></i> Telegram Support
+                </button>
+                <button class="support-btn" onclick="window.open('https://wa.me/1234567890')" style="background: rgba(37, 211, 102, 0.2); color: #25D366;">
+                  <i class="fab fa-whatsapp"></i> WhatsApp Support
+                </button>
+              </div>
+              
+              <div class="support-card">
+                <h3><i class="fas fa-crown"></i> Premium</h3>
+                <button class="support-btn" onclick="showPremiumDialog()">
+                  <i class="fas fa-star"></i> Upgrade to Premium
+                </button>
+                <button class="support-btn" onclick="showPremiumFeatures()">
+                  <i class="fas fa-gem"></i> Premium Features
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Fixed Navigation Bar -->
+    <div class="nav-bar">
+      <a href="#" class="nav-item active" onclick="switchTab('predictorTab', this)">
+        <i class="fas fa-chart-line"></i>
+        <span>PREDICTOR</span>
+      </a>
+      <a href="#" class="nav-item" onclick="switchTab('historyTab', this)">
+        <i class="fas fa-history"></i>
+        <span>HISTORY</span>
+      </a>
+      <a href="#" class="nav-item" onclick="switchTab('notificationTab', this)" id="notificationNavItem">
+        <i class="fas fa-bell"></i>
+        <span>NOTIFICATION</span>
+        <div class="notification-badge" id="notificationBadge" style="display: none;"></div>
+      </a>
+      <a href="#" class="nav-item" onclick="switchTab('supportTab', this)">
+        <i class="fas fa-headset"></i>
+        <span>SUPPORT</span>
+      </a>
+    </div>
   </div>
 
-  <!-- All popups and dialogs same as original -->
+  <!-- Tips Badge -->
+  <div class="tips-badge" id="tipsBadge">
+    <i class="fas fa-lightbulb"></i>
+  </div>
 
-  <!-- Script includes -->
+  <!-- Tips Popup -->
+  <div class="tips-popup" id="tipsPopup">
+    <h4><i class="fas fa-lightbulb"></i> TIPS & TRICKS</h4>
+    <p>Here are some expert tips to improve your predictions:</p>
+    <ul>
+      <li>Use signals with confidence above 70%</li>
+      <li>Start with small bets to test the system</li>
+      <li>Combine multiple signals for better accuracy</li>
+      <li>Set auto-cashout slightly below target</li>
+    </ul>
+    <a href="https://damindu817.github.io/Aviator-Sha512-Hash-Professional-Strategy-Guide/" target="_blank">Click here to view the full winning guide</a>
+  </div>
+
+  <!-- Disclaimer Badge -->
+  <div class="disclaimer-badge" id="disclaimerBadge" onclick="window.open('https://damindu817.github.io/DISCLAIMER-/','_blank')">
+    <i class="fas fa-exclamation-triangle"></i>
+  </div>
+
+  <!-- Disclaimer Popup -->
+  <div class="disclaimer-popup" id="disclaimerPopup">
+    <h4>DISCLAIMER!</h4>
+    <p>This tool provides analytical insights based on patterns and probability. Predictions are not guaranteed. Gambling involves risk. Only play with money you can afford to lose.</p>
+    <a href="https://damindi817.github.io/DISCLAIMER-/" target="_blank">Click icon for guide & creator contact</a>
+  </div>
+
+  <!-- Custom Dialogs -->
+  <div class="dialog-overlay" id="clearDialog">
+    <div class="dialog-box">
+      <div class="dialog-title">
+        <i class="fas fa-exclamation-triangle dialog-icon"></i>
+        <span>Confirm Clear History</span>
+      </div>
+      <div class="dialog-message">Are you sure you want to clear all prediction history? This cannot be undone.</div>
+      <div class="dialog-buttons">
+        <button class="dialog-btn dialog-btn-cancel" onclick="hideClearDialog()">Cancel</button>
+        <button class="dialog-btn dialog-btn-confirm" onclick="clearHistory()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialog-overlay" id="errorDialog">
+    <div class="dialog-box">
+      <div class="dialog-title">
+        <i class="fas fa-exclamation-circle dialog-icon"></i>
+        <span>Invalid Input</span>
+      </div>
+      <div class="dialog-message" id="errorMessage">Invalid SHA512 hash. Must be exactly 128 hexadecimal characters.</div>
+      <div class="dialog-buttons">
+        <button class="dialog-btn dialog-btn-confirm" onclick="hideErrorDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="dialog-overlay" id="successDialog">
+    <div class="dialog-box">
+      <div class="dialog-title">
+        <i class="fas fa-check-circle dialog-icon" style="color: var(--success);"></i>
+        <span>Signal Generated</span>
+      </div>
+      <div class="dialog-message" id="successMessage">Prediction signal created successfully!</div>
+      <div class="dialog-buttons">
+        <button class="dialog-btn dialog-btn-confirm" onclick="hideSuccessDialog()" style="background: var(--success);">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Premium Dialog -->
+  <div class="dialog-overlay" id="premiumDialog">
+    <div class="dialog-box">
+      <div class="dialog-title">
+        <i class="fas fa-crown" style="color: var(--warning);"></i>
+        <span>Premium Features</span>
+      </div>
+      <div class="dialog-message">
+        <ul style="padding-left: 20px; margin-bottom: 15px;">
+          <li>Higher accuracy predictions</li>
+          <li>Exclusive signals</li>
+          <li>Advanced analytics</li>
+          <li>Priority support</li>
+          <li>No ads</li>
+        </ul>
+        <p>Upgrade now to unlock all premium features!</p>
+      </div>
+      <div class="dialog-buttons">
+        <button class="dialog-btn dialog-btn-cancel" onclick="hidePremiumDialog()">Later</button>
+        <button class="dialog-btn dialog-btn-confirm" onclick="window.open('https://damindu817.github.io/Aviator-Sha512-Hash-Professional-Strategy-Guide/','_blank')" style="background: var(--warning);">Upgrade</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Premium Signal Popup -->
+  <div class="signal-container" id="signalPopup">
+    <div class="signal-card">
+      <div class="signal-header">
+        <div class="signal-title">
+          <i class="fas fa-bell"></i> PREMIUM SIGNAL
+        </div>
+        <button class="close-btn" onclick="closeSignalPopup()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="signal-meta">
+        <div class="meta-item">
+          <div class="meta-label">Signal Time</div>
+          <div class="meta-value time" id="signal-time">-</div>
+        </div>
+        <div class="meta-item">
+          <div class="meta-label">Target</div>
+          <div class="meta-value odd" id="signal-odd">-</div>
+        </div>
+      </div>
+      
+      <div class="countdown-section">
+        <div class="countdown-circle">
+          <div id="countdown-timer">20</div>
+        </div>
+        <div class="countdown-label">SECONDS REMAINING</div>
+      </div>
+      
+      <div class="strategy-section">
+        <div class="strategy-title">
+          <i class="fas fa-chart-line"></i> WINNING STRATEGY
+        </div>
+        
+        <div class="strategy-steps" id="strategy-steps">
+          <!-- Dynamic content will be inserted here -->
+        </div>
+      </div>
+      
+      <div class="signal-footer">
+        THIS SIGNAL IS GENERATED USING THE XTREME AVIATOR SHA512 HASH ULTRA PREDICTOR PRO TOOL WITH AI-POWERED ACCURACY
+      </div>
+    </div>
+  </div>
+
+  <!-- RISK SIGNAL Popup -->
+  <div class="risk-signal-container" id="riskSignalPopup">
+    <div class="risk-signal-card">
+      <div class="risk-signal-header">
+        <div class="risk-signal-title">
+          <i class="fas fa-exclamation-triangle"></i> RISK SIGNAL
+        </div>
+        <button class="risk-close-btn" onclick="closeRiskSignalPopup()">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      
+      <div class="risk-signal-meta">
+        <div class="risk-meta-item">
+          <div class="risk-meta-label">Signal Time</div>
+          <div class="risk-meta-value time" id="risk-signal-time">-</div>
+        </div>
+        <div class="risk-meta-item">
+          <div class="risk-meta-label">Target</div>
+          <div class="risk-meta-value odd" id="risk-signal-odd">-</div>
+        </div>
+      </div>
+      
+      <div class="risk-countdown-section">
+        <div class="risk-countdown-circle">
+          <div id="risk-countdown-timer">20</div>
+        </div>
+        <div class="risk-countdown-label">SECONDS REMAINING</div>
+      </div>
+      
+      <div class="risk-strategy-section">
+        <div class="risk-strategy-title">
+          <i class="fas fa-chart-line"></i> RISK MANAGEMENT STRATEGY
+        </div>
+        
+        <div class="risk-strategy-steps" id="risk-strategy-steps">
+          <!-- Dynamic content will be inserted here -->
+        </div>
+      </div>
+      
+      <div class="risk-signal-footer">
+        THIS SIGNAL IS GENERATED USING THE XTREME AVIATOR SHA512 HASH ULTRA PREDICTOR PRO TOOL WITH AI-POWERED ACCURACY
+      </div>
+    </div>
+  </div>
+
+  <audio id="signalSound" src="https://assets.mixkit.co/sfx/preview/mixkit-alarm-digital-clock-beep-989.mp3" preload="auto"></audio>
+  <audio id="successSound" src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3" preload="auto"></audio>
+  <audio id="beepSound" src="https://assets.mixkit.co/sfx/preview/mixkit-positive-interface-beep-221.mp3" preload="auto"></audio>
+  <audio id="warningSound" src="https://assets.mixkit.co/sfx/preview/mixkit-sci-fi-alarm-905.mp3" preload="auto"></audio>
+  <textarea id="copyTemplate" style="position: absolute; left: -9999px;"></textarea>
+
+  <script src="js/main.js"></script>
   <script src="js/core/entropy.js"></script>
   <script src="js/core/scoring.js"></script>
   <script src="js/core/delay.js"></script>
   <script src="js/multipliers/2x.js"></script>
   <script src="js/multipliers/3x.js"></script>
-  <!-- Include other multipliers -->
+  <script src="js/multipliers/4x.js"></script>
+  <script src="js/multipliers/7x.js"></script>
+  <script src="js/multipliers/10x.js"></script>
+  <script src="js/multipliers/100x.js"></script>
   <script src="js/ui/confidenceBars.js"></script>
   <script src="js/ui/resultsDisplay.js"></script>
-  <script src="js/main.js"></script>
 </body>
 </html>
